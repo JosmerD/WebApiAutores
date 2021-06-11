@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -10,9 +11,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using WebApiAutores.Filtros;
+using WebApiAutores.Middlewares;
+using WebApiAutores.Servicios;
+
 
 namespace WebApiAutores
 {
@@ -28,19 +34,32 @@ namespace WebApiAutores
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers(opciones =>
+            {
+                opciones.Filters.Add(typeof(FiltroDeExcepcion));
+            }).AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             services.AddControllersWithViews().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             services.AddDbContext<ApplicationDbContext>(opcion => opcion.UseSqlServer(Configuration.GetConnectionString("defaultConnection")));
+           
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApiAutores", Version = "v1" });
             });
+
+            services.AddAutoMapper(typeof(Startup));
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+      
+            services.AddHostedService<EscribirEnArchivo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
+       
+            app.UseLoguearRespuestaHTTP();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -50,7 +69,7 @@ namespace WebApiAutores
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
+            app.UseRouting();          
 
             app.UseAuthorization();
 
