@@ -37,9 +37,9 @@ namespace WebApiAutores
             services.AddControllers(opciones =>
             {
                 opciones.Filters.Add(typeof(FiltroDeExcepcion));
-            }).AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            }).AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore).AddNewtonsoftJson();
 
-            services.AddControllersWithViews().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            services.AddControllersWithViews().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore).AddNewtonsoftJson();
 
             services.AddDbContext<ApplicationDbContext>(opcion => opcion.UseSqlServer(Configuration.GetConnectionString("defaultConnection")));
            

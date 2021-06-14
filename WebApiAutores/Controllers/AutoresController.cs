@@ -33,11 +33,18 @@ namespace WebApiAutores.Controllers
             var autores = await context.Autores.ToListAsync();
             return mapper.Map<List<AutorDTO>>(autores);
         }        
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<AutorDTO>> Get(int id)
+        [HttpGet("{id:int}",Name ="obtenerAutor")]
+        public async Task<ActionResult<AutorDTOConLibros>> Get(int id)
         {
-            var autor= await context.Autores.FirstOrDefaultAsync(x=>x.Id==id);
-            return mapper.Map<AutorDTO>(autor);
+            var autor= await context.Autores.Include(a=>a.AutoresLibros)
+                .ThenInclude(b=>b.Libro).FirstOrDefaultAsync(x=>x.Id==id);
+
+            if (autor==null)
+            {
+                return NotFound();
+            }
+
+            return mapper.Map<AutorDTOConLibros>(autor);
         }
         [HttpGet("{nombre}")]
         public async Task<ActionResult<List<AutorDTO>>> Get([FromRoute] string nombre)
@@ -61,23 +68,25 @@ namespace WebApiAutores.Controllers
             context.Add(autor);
             await context.SaveChangesAsync();
 
-            return Ok();
+            var autorDTO = mapper.Map<AutorDTO>(autor);
+
+           
+
+            return CreatedAtRoute("obtenerAutor",new {id=autor.Id},autorDTO);
         }
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> Put(Autor autor, int id)
+        public async Task<ActionResult> Put(AutorCreacionDTO autorCreacionDTO, int id)
         {
-            if (autor.Id != id)
-            {
-                return BadRequest("El id del autor no coincide con el di de la URL");
-            }
             var existe = await context.Autores.AnyAsync(x => x.Id == id);
             if (!existe)
             {
                 return NotFound();
             }
+            var autor = mapper.Map<Autor>(autorCreacionDTO);
+            autor.Id = id;
             context.Update(autor);
             await context.SaveChangesAsync();
-            return Ok();
+            return NoContent();
         }
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
