@@ -10,7 +10,7 @@ namespace WebApiAutores.DTOs
     public class LibroCreacionDTO
     {
         [PrimerLetraMayuscula]
-        [StringLength(maximumLength: 250)]
+        [StringLength(maximumLength: 300)]
         public string Titulo { get; set; }
         public DateTime FechaPublicacion { get; set; }
         public List<int> AutoresIds { get; set; }
